@@ -13,12 +13,12 @@ datasource db {
 // --------------------------------------------------------------------
 // Coffee Machines
 model CoffeeMachines {
-  id                   Int        @id @default(autoincrement())
+  id                   Int       @id @default(autoincrement())
   name                 String
   count                Int
   sizeParameterId      Int
   drinksQtyParameterId Int
-  size                 Sizes @relation(fields: [sizeParameterId], references: [id])
+  size                 Sizes     @relation(fields: [sizeParameterId], references: [id])
   qty                  DrinksQty @relation(fields: [drinksQtyParameterId], references: [id])
 }
 
@@ -29,7 +29,7 @@ model Sizes {
   name          String
   value         String
   code          String
-  image         String
+  image         String           @db.VarChar(1500)
   coffeMachines CoffeeMachines[]
 }
 

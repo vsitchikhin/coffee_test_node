@@ -1,5 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import useMachinesController from "../controllers/machines/MachinesController";
+import {seed} from "../dbseed";
 
 
 
@@ -8,8 +10,14 @@ export default function getCoffeeMachinesRouter(db: PrismaClient) {
 
   // Получение списка всех кофе машин добавленных в хранилище
   router.get('/', async (req, res) => {
-    const data = req.body.json();
-    res.json(`this is machines page`)
+
+    const data = await useMachinesController(db).getAllRegisteredMachines();
+    res.json(data)
+  })
+
+  router.post('/seed', async (req, res) => {
+    await seed(db);
+    res.json('it was seed');
   })
 
   // Получение списка всех параметров кофе машин

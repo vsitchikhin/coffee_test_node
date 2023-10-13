@@ -1,11 +1,30 @@
+import { IResponse, ParameterDto, CoffeeMachineDto } from "types/api/api.types";
+import {CoffeeMachines, Sizes, DrinksQty, PrismaClient} from "@prisma/client";
+
+export default function useMachinesController(db: PrismaClient) {
+  async function getAllRegisteredMachines() {
+    await db.$connect();
+
+    const coffeeMachinesList = await db.coffeeMachines.findMany({
+      include: {
+        size: true,
+        qty: true,
+      }
+    })
+
+    // const response: IResponse<CoffeeMachineDto[]> = {} as IResponse<CoffeeMachineDto[]>
+    await db.$disconnect();
+
+    return coffeeMachinesList;
+  }
+
+  return {
+    getAllRegisteredMachines,
+  }
+}
+
+
 /*
-import { IResponse, UserFullApi, UserShortApi, UserDto } from "types/api/api.types";
-import { Users } from "@prisma/client";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from 'bcrypt';
-import { ErrorsTypesEnum } from "../../types/errorsTypesEnum";
-
-
 export async function signIn(payload: UserFullApi, salt: string, db: PrismaClient) {
   const password = await bcrypt.hash(payload.password, salt);
 

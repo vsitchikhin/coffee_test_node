@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Sizes` MODIFY `image` VARCHAR(1500) NOT NULL;
