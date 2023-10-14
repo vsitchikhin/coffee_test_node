@@ -11,7 +11,7 @@ export interface CoffeeMachineDto {
   name: string;
   count: number;
   size: Required<ParameterDto>;
-  drinksQty: ParameterDto;
+  qty: ParameterDto;
 }
 
 export interface IResponse<T> {

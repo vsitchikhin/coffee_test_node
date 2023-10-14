@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import dotenv from 'dotenv';
 import { db } from './database/db';
-import getCoffeeMachinesRouter from "./routes/coffeMachines";
+import getCoffeeMachinesRouter from "./routes/coffeMachinesRouter";
 
 dotenv.config();
 

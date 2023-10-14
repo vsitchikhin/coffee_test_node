@@ -1,116 +1,120 @@
 import { IResponse, ParameterDto, CoffeeMachineDto } from "types/api/api.types";
-import {CoffeeMachines, Sizes, DrinksQty, PrismaClient} from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
+import {useErrorResponse, useResponseBuilder} from "../../utils/response.utils";
 
 export default function useMachinesController(db: PrismaClient) {
   async function getAllRegisteredMachines() {
     await db.$connect();
+    let response: IResponse<CoffeeMachineDto[] | null>;
 
-    const coffeeMachinesList = await db.coffeeMachines.findMany({
-      include: {
-        size: true,
-        qty: true,
-      }
-    })
+    try {
+      const coffeeMachinesResponse = <CoffeeMachineDto[]>await db.coffeeMachines.findMany({
+        include: {
+          size: true,
+          qty: true,
+        }
+      })
 
-    // const response: IResponse<CoffeeMachineDto[]> = {} as IResponse<CoffeeMachineDto[]>
+      response = useResponseBuilder<CoffeeMachineDto[]>(coffeeMachinesResponse);
+    } catch(e) {
+      response = useErrorResponse(e);
+    }
+
     await db.$disconnect();
+    return response;
+  }
 
-    return coffeeMachinesList;
+  async function getAllParameters(): Promise<IResponse<ParameterDto[] | null>> {
+    await db.$connect();
+    let response: IResponse<ParameterDto[] | null>;
+
+    try {
+      const parametersResponse = <ParameterDto[]>[...await db.sizes.findMany(), ...await db.drinksQty.findMany()]
+
+      await db.$disconnect();
+
+      response = useResponseBuilder<ParameterDto[]>(parametersResponse);
+    } catch(e) {
+      response = useErrorResponse(e);
+    }
+
+    await db.$disconnect();
+    return response;
+  }
+
+  async function deleteMachine(id: string): Promise<IResponse<boolean | null>> {
+    const machineId = parseInt(id);
+
+    await db.$connect();
+    let response: IResponse<boolean | null>;
+
+    try {
+      await db.coffeeMachines.delete({
+        where: {
+          id: machineId,
+        }
+      })
+
+      response = useResponseBuilder<boolean>(true);
+    } catch(e) {
+      response = useErrorResponse(e);
+    }
+
+    await db.$disconnect();
+    return response;
+  }
+
+  async function patchMachine(id: string, data: CoffeeMachineDto): Promise<IResponse<boolean | null>>{
+    await db.$connect();
+    let response: IResponse<boolean | null>;
+
+    try {
+      db.coffeeMachines.update({
+        where: {
+          id: data.id,
+        },
+        data: {
+          count: data.count,
+        }
+      })
+
+      response = useResponseBuilder<boolean>(true);
+    } catch(e) {
+      response = useErrorResponse(e);
+    }
+
+    await db.$disconnect();
+    return response;
+  }
+
+  async function addMachineToBucket(data: CoffeeMachineDto): Promise<IResponse<boolean | null>> {
+    await db.$connect();
+    let response: IResponse<boolean | null>;
+
+    try {
+      await db.coffeeMachines.create({
+        data: {
+          name: data.name,
+          count: data.count,
+          sizeParameterId: data.size.id,
+          drinksQtyParameterId: data.qty.id,
+        }
+      });
+
+      response = useResponseBuilder(true);
+    } catch(e) {
+      response = useErrorResponse(e);
+    }
+
+    await db.$disconnect();
+    return response;
   }
 
   return {
     getAllRegisteredMachines,
+    getAllParameters,
+    deleteMachine,
+    patchMachine,
+    addMachineToBucket,
   }
 }
-
-
-/*
-export async function signIn(payload: UserFullApi, salt: string, db: PrismaClient) {
-  const password = await bcrypt.hash(payload.password, salt);
-
-  await db.$connect();
-
-  const userResponse: UserDto = {
-    id: payload.id,
-    name: payload.name,
-    surname: payload.surname,
-    login: payload.login || payload.email || '',
-    password: password,
-    accounts: [],
-  }
-
-  if (!userResponse.login) {
-    return {
-      payload: {},
-      error: true,
-      errorCode: ErrorsTypesEnum.invalidData,
-      msg: 'Email or login required!',
-    } as IResponse;
-  }
-
-  const response = await db.users.create({
-    include: {
-      accounts: {
-        include: {
-          user: true,
-        }
-      }
-    },
-    data: {
-      name: userResponse.name,
-      surname: userResponse.surname,
-      login: userResponse.login,
-      password: userResponse.password,
-      accounts: undefined,
-    }
-  })
-
-  await db.$disconnect();
-
-  return {
-    payload: response,
-    error: false,
-    errorCode: ErrorsTypesEnum.ok,
-    msg: '',
-  } as IResponse;
-}
-
-export async function signUp(payload: UserShortApi, salt: string, db: PrismaClient) {
-  const password = await bcrypt.hash(payload.password, salt);
-
-  await db.$connect();
-
-  const response = await db.users.findUnique({
-    where: {
-      login: payload.login,
-    }
-  })
-
-  await db.$disconnect();
-
-  if (!response) {
-    return {
-      payload: {},
-      error: true,
-      errorCode: ErrorsTypesEnum.invalidData,
-      msg: 'This user is not exists',
-    } as IResponse;
-  }
-
-  if (response.password !== password) {
-    return {
-      payload: {},
-      error: true,
-      errorCode: ErrorsTypesEnum.invalidPassword,
-      msg: 'Invalid password',
-    } as IResponse;
-  }
-
-  return {
-    payload: response,
-    error: false,
-    errorCode: ErrorsTypesEnum.ok,
-    msg: '',
-  } as IResponse;
-}
-*/
