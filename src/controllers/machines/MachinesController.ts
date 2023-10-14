@@ -87,11 +87,42 @@ export default function useMachinesController(db: PrismaClient) {
     return response;
   }
 
+  async function addMachinesCount(id: string, data: CoffeeMachineDto, existedCount: number): Promise<IResponse<boolean | null>> {
+    const machineId = parseInt(id);
+    await db.$connect();
+    let result: IResponse<boolean | null>;
+
+    try {
+      db.coffeeMachines.update({
+        where: {
+          id: machineId,
+        },
+        data: {
+          count: existedCount + data.count,
+        }
+      })
+
+      result = useResponseBuilder(true)
+    } catch(e) {
+      result = useErrorResponse(e)
+    }
+
+    await db.coffeeMachines;
+    return result;
+  }
+
   async function addMachineToBucket(data: CoffeeMachineDto): Promise<IResponse<boolean | null>> {
     await db.$connect();
     let response: IResponse<boolean | null>;
 
     try {
+      const existedMachine = <CoffeeMachineDto | null | undefined>await db.$queryRaw`select * from CoffeeMachines where drinksQtyParameterId=${data.qty.id} and sizeParameterId=${data.size.id}`;
+
+      // Если машина с такими параметрами уже существует, увеличиваем
+      if (existedMachine) {
+        return await addMachinesCount(existedMachine.id.toString(), data, existedMachine.count);
+      }
+
       await db.coffeeMachines.create({
         data: {
           name: data.name,
