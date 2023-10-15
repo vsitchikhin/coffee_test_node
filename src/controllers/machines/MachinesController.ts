@@ -93,7 +93,7 @@ export default function useMachinesController(db: PrismaClient) {
     let result: IResponse<boolean | null>;
 
     try {
-      db.coffeeMachines.update({
+      await db.coffeeMachines.update({
         where: {
           id: machineId,
         },
@@ -116,11 +116,12 @@ export default function useMachinesController(db: PrismaClient) {
     let response: IResponse<boolean | null>;
 
     try {
-      const existedMachine = <CoffeeMachineDto | null | undefined>await db.$queryRaw`select * from CoffeeMachines where drinksQtyParameterId=${data.qty.id} and sizeParameterId=${data.size.id}`;
+      const existedMachine = <CoffeeMachineDto[] | null | undefined>await db.$queryRaw`select * from CoffeeMachines where drinksQtyParameterId=${data.qty.id} and sizeParameterId=${data.size.id}`;
 
       // Если машина с такими параметрами уже существует, увеличиваем
-      if (existedMachine) {
-        return await addMachinesCount(existedMachine.id.toString(), data, existedMachine.count);
+      if (existedMachine && existedMachine.length) {
+        await db.$disconnect();
+        return await addMachinesCount(existedMachine[0].id.toString(), data, existedMachine[0].count);
       }
 
       await db.coffeeMachines.create({

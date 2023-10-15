@@ -12,7 +12,7 @@ export function useErrorResponse(e: any): IResponse<null> {
 export function useResponseBuilder<T>(payload: T): IResponse<T> {
   return {
     payload,
-    error: true,
+    error: false,
     errorCode: '',
     msg: '',
   }

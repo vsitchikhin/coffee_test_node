@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import useMachinesController from "../controllers/machines/MachinesController";
-import {seed} from "../dbseed";
+import {seed} from "../database/dbseed";
 
 
 
