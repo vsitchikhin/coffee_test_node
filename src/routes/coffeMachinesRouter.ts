@@ -21,13 +21,14 @@ export default function getCoffeeMachinesRouter(db: PrismaClient) {
   })
 
   // Удаление кофе машины из списка добавленных
-  router.delete('/:id(^[0-9]+&)', async (req, res) => {
+  router.delete('/:id', async (req, res) => {
+    console.log(req.params.id)
     const response = await useMachinesController(db).deleteMachine(req.params.id);
     res.json(response);
   })
 
   // Обновление данных о добавленной кофе машине
-  router.patch('/:id(^[0-9]+&)', async (req, res) => {
+  router.patch('/:id', async (req, res) => {
     const response = await useMachinesController(db).patchMachine(req.params.id, req.body);
     res.json(response)
   })

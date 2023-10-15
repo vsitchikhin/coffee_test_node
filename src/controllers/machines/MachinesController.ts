@@ -67,11 +67,12 @@ export default function useMachinesController(db: PrismaClient) {
   async function patchMachine(id: string, data: CoffeeMachineDto): Promise<IResponse<boolean | null>>{
     await db.$connect();
     let response: IResponse<boolean | null>;
+    const machineId = parseInt(id)
 
     try {
-      db.coffeeMachines.update({
+      await db.coffeeMachines.update({
         where: {
-          id: data.id,
+          id: machineId,
         },
         data: {
           count: data.count,
